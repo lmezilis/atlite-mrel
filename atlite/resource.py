@@ -114,6 +114,7 @@ def get_windturbineconfig(
 
     return _validate_turbine_config_dict(conf, add_cutout_windspeed)
 
+
 def get_wecgeneratorconfig(wec_type):
     """
     Load the wec wec_type power matrix
@@ -132,6 +133,7 @@ def get_wecgeneratorconfig(wec_type):
         conf = yaml.safe_load(f)
 
     return conf
+
 
 def get_solarpanelconfig(panel):
     """

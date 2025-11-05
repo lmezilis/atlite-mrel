@@ -36,9 +36,9 @@ from atlite.pv.solar_position import SolarPosition
 from atlite.resource import (
     get_cspinstallationconfig,
     get_solarpanelconfig,
+    get_wecgeneratorconfig,
     get_windturbineconfig,
     windturbine_smooth,
-    get_wecgeneratorconfig,
 )
 
 logger = logging.getLogger(__name__)
@@ -656,13 +656,12 @@ def wind(
 
 # #wave
 def convert_wave(ds, wec_type):
-
-    power_matrix = pd.DataFrame.from_dict(wec_type['Power_Matrix'])
+    power_matrix = pd.DataFrame.from_dict(wec_type["Power_Matrix"])
 
     max_pow = power_matrix.to_numpy().max()
-    
-    Hs = np.ceil(ds['wave_height']*2)/2
-    Tp = np.ceil(ds['wave_period']*2)/2
+
+    Hs = np.ceil(ds["wave_height"] * 2) / 2
+    Tp = np.ceil(ds["wave_period"] * 2) / 2
 
     Hs_list = Hs.to_numpy().flatten().tolist()
     Tp_list = Tp.to_numpy().flatten().tolist()
@@ -675,7 +674,7 @@ def convert_wave(ds, wec_type):
     # for loop to loop through Hs and Tp pairs and get the power output and capacity factor
     for Hs_ind, Tp_ind in zip(Hs_list, Tp_list):
         if count % 1000000 == 0:
-            print('Case {} of {}: {} %'.format(count, cases, count/cases *100))
+            print(f"Case {count} of {cases}: {count / cases * 100} %")
 
         if np.isnan(Hs_ind) or np.isnan(Tp_ind):
             power_list.append(0)
@@ -683,7 +682,7 @@ def convert_wave(ds, wec_type):
             power_list.append(0)
         else:
             generated_power = power_matrix.loc[Hs_ind, Tp_ind]
-            power_list.append(generated_power/max_pow)
+            power_list.append(generated_power / max_pow)
         count += 1
 
     # results list to numpy array
@@ -691,15 +690,15 @@ def convert_wave(ds, wec_type):
 
     power_list_np = power_list_np.reshape(Hs.shape)
 
-    da = xr.DataArray(power_list_np,
-                      coords = Hs.coords,
-                      dims = Hs.dims,
-                      name = 'Power generated')
+    da = xr.DataArray(
+        power_list_np, coords=Hs.coords, dims=Hs.dims, name="Power generated"
+    )
     da.attrs["units"] = "kWh/kWp"
     da = da.rename("specific generation")
     da = da.fillna(0)
 
     return da
+
 
 def wave(cutout, wec_type, **params):
     """
@@ -712,9 +711,8 @@ def wave(cutout, wec_type, **params):
         wec_type = get_wecgeneratorconfig(wec_type)
 
     return cutout.convert_and_aggregate(
-        convert_func = convert_wave, wec_type = wec_type , **params
+        convert_func=convert_wave, wec_type=wec_type, **params
     )
-
 
 
 # irradiation

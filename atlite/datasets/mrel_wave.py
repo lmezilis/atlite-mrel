@@ -1,10 +1,10 @@
-
-
-import xarray as xr
-import numpy as np
 import logging
+
+import numpy as np
+import xarray as xr
 from rasterio.warp import Resampling
-from atlite.gis import regrid 
+
+from atlite.gis import regrid
 
 logger = logging.getLogger(__name__)
 
@@ -12,10 +12,8 @@ crs = 4326
 dx = 0.0625
 dy = 0.04
 
-features = {
-    "wave_height" : ["wave_height"],
-    "wave_period" : ["wave_period"]
-}
+features = {"wave_height": ["wave_height"], "wave_period": ["wave_period"]}
+
 
 def _rename_and_clean_coords(ds):
     """
@@ -30,24 +28,23 @@ def _rename_and_clean_coords(ds):
         x=np.round(ds.x.astype(float), 5), y=np.round(ds.y.astype(float), 5)
     )
 
-
     return ds
 
 
 def get_data_wave_height(ds):
-
     ds = ds.rename({"hs": "wave_height"})
     ds["wave_height"] = ds["wave_height"].clip(min=0.0)
 
     return ds
 
-def get_data_wave_period(ds):
 
+def get_data_wave_period(ds):
     ds = ds.rename({"tp": "wave_period"})
     # ds["wave_period"] = (1 / ds["wave_period"])
     ds["wave_period"] = ds["wave_period"].clip(min=0.0)
 
     return ds
+
 
 def as_slice(bounds, pad=True):
     """
@@ -58,8 +55,8 @@ def as_slice(bounds, pad=True):
         bounds = slice(*bounds)
     return bounds
 
-def get_data(cutout, feature, tmpdir, **creation_parameters):
 
+def get_data(cutout, feature, tmpdir, **creation_parameters):
     coords = cutout.coords
 
     if "data_path" not in creation_parameters:
@@ -69,17 +66,14 @@ def get_data(cutout, feature, tmpdir, **creation_parameters):
 
     ds = xr.open_dataset(path)
 
-    if 'longitude' in ds and 'latitude' in ds:
+    if "longitude" in ds and "latitude" in ds:
         ds = ds.rename({"longitude": "x", "latitude": "y"})
 
     ds = ds.sel(x=as_slice(cutout.extent[:2]), y=as_slice(cutout.extent[2:]))
-    ds = ds.assign_coords(
-        x=ds.x.astype(float).round(4), y=ds.y.astype(float).round(4)
-    )
+    ds = ds.assign_coords(x=ds.x.astype(float).round(4), y=ds.y.astype(float).round(4))
 
     if (cutout.dx != dx) or (cutout.dy != dy):
         ds = regrid(ds, coords["x"], coords["y"], resampling=Resampling.average)
-    
 
     # coords = cutout.coords
 
@@ -95,12 +89,9 @@ def get_data(cutout, feature, tmpdir, **creation_parameters):
 
     variables = ds.data_vars
 
-
     for var in variables:
-        if var not in ['hs', 'tp']:
+        if var not in ["hs", "tp"]:
             ds = ds.drop_vars(var)
-
-
 
     # ds = ds.sel(x=as_slice(cutout.extent[:2]), y=as_slice(cutout.extent[2:]))
 
@@ -115,6 +106,3 @@ def get_data(cutout, feature, tmpdir, **creation_parameters):
     # ds = ds.assign_coords(x=ds.coords["x"], y=ds.coords["y"])
 
     return ds
-
-
-
