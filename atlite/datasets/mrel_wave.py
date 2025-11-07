@@ -11,10 +11,9 @@ Volume 236, 2024, 121391,ISSN 0960-1481, https://doi.org/10.1016/j.renene.2024.1
 """
 
 import xarray as xr
-import numpy as np
-import logging
 from rasterio.warp import Resampling
-from atlite.gis import regrid 
+
+from atlite.gis import regrid
 
 logger = logging.getLogger(__name__)
 
@@ -65,6 +64,7 @@ def _bounds(coords, pad: float=0) -> dict[str, slice]:
     
     return {"x": slice(x0, x1), "y": slice(y0, y1)}
 
+
 def get_data(cutout, feature, tmpdir, **creation_parameters):
     """
     Load stored MREL (ECHOWAVE) data and reformat to matching the given cutout.
@@ -103,8 +103,7 @@ def get_data(cutout, feature, tmpdir, **creation_parameters):
         sanitize_func = globals().get(f"sanitize_{feature}")
         if sanitize_func is not None:
                 ds = sanitize_func(ds)
+                
     return ds
-
-
 
 

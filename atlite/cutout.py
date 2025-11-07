@@ -44,8 +44,8 @@ from atlite.convert import (
     soil_temperature,
     solar_thermal,
     temperature,
-    wind,
     wave,
+    wind,
 )
 from atlite.data import available_features, cutout_prepare
 from atlite.datasets import modules as datamodules
