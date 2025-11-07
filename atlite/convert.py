@@ -656,7 +656,6 @@ def wind(
 
 # wave
 def convert_wave(ds, wec_type):
-<<<<<<< HEAD
     """
     Convert wave height (Hs) and wave peak period (Tp) data into normalized power output
     using the device-specific Wave Energy Converter (WEC) power matrix.
@@ -689,9 +688,7 @@ def convert_wave(ds, wec_type):
     """
 
     power_matrix = pd.DataFrame.from_dict(wec_type['Power_Matrix'])
-=======
-    power_matrix = pd.DataFrame.from_dict(wec_type["Power_Matrix"])
->>>>>>> 20045e1f9ad19446be68859c533acacceb49dfd6
+
 
     max_pow = power_matrix.to_numpy().max()
 
@@ -709,13 +706,6 @@ def convert_wave(ds, wec_type):
     # for loop to loop through Hs and Tp pairs and get the power output and capacity factor
     for Hs_ind, Tp_ind in zip(Hs_list, Tp_list):
         if count % 1000000 == 0:
-<<<<<<< HEAD
-            print('Case {} of {}: {} %'.format(count, cases, count/cases *100))
-=======
-            print(f"Case {count} of {cases}: {count / cases * 100} %")
-
->>>>>>> 20045e1f9ad19446be68859c533acacceb49dfd6
-        if np.isnan(Hs_ind) or np.isnan(Tp_ind):
             power_list.append(0)
         else:
             generated_power = power_matrix.loc[Hs_ind, Tp_ind]
@@ -765,19 +755,9 @@ def wave(cutout, wec_type, **params):
         wec_type = get_wecgeneratorconfig(wec_type)
 
     return cutout.convert_and_aggregate(
-<<<<<<< HEAD
-        convert_func = convert_wave, 
         wec_type = wec_type , 
         **params
     )
-
-=======
-        convert_func=convert_wave, wec_type=wec_type, **params
-    )
-
-
->>>>>>> 20045e1f9ad19446be68859c533acacceb49dfd6
-# irradiation
 def convert_irradiation(
     ds,
     orientation,

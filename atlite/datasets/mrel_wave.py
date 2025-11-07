@@ -10,6 +10,8 @@ for wave energy applications in North Atlantic European waters, Renewable Energy
 Volume 236, 2024, 121391,ISSN 0960-1481, https://doi.org/10.1016/j.renene.2024.121391
 """
 
+import logging
+import numpy as np
 import xarray as xr
 from rasterio.warp import Resampling
 

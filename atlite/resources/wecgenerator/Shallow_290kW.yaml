@@ -2,7 +2,6 @@
 #
 # SPDX-License-Identifier: CC-BY-4.0
 
-<<<<<<< HEAD
 # WEC generator power matrix dictionary.
 #
 # References that include the methodology, equations of motions and controls 
@@ -18,8 +17,6 @@
 # opportunities, and untapped potential for 100% decarbonised systems. Energy, Volume 336, 2025, 
 # 138359, ISSN 0360-5442, https://doi.org/10.1016/j.energy.2025.138359. 
 
-=======
->>>>>>> 20045e1f9ad19446be68859c533acacceb49dfd6
 name: Shallow
 
 # A nested dictionary that defines the power output for combinations of wave_period (tp) and wave_height (hs).
