@@ -117,8 +117,8 @@ def get_windturbineconfig(
 def get_wecgeneratorconfig(wec_type):
     """
     Load the wec wec_type power matrix
-    the configuration can either be one from local storage then 'turbine' is
-    considered part of the file base name '<turbine>.yaml'
+    the configuration can either be one from local storage then 'wec_type' is
+    considered part of the file base name '<wec_type>.yaml'
     """
     assert isinstance(wec_type, (str | Path))
 

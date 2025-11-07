@@ -44,7 +44,7 @@ crs = 4326
 
 features = {
     "height": ["height"],
-    "wind": ["wnd100m", "wnd_azimuth", "roughness"],
+    "wind": ["wnd100m", "wnd_shear_exp", "wnd_azimuth", "roughness"],
     "influx": [
         "influx_toa",
         "influx_direct",
@@ -55,8 +55,7 @@ features = {
     ],
     "temperature": ["temperature", "soil temperature", "dewpoint temperature"],
     "runoff": ["runoff"],
-    "wave_height" : ["wave_height"],
-    "wave_period" : ["wave_period"],
+    "wave" : ["wave_height", "wave_period"]
 }
 
 static_features = {"height"}

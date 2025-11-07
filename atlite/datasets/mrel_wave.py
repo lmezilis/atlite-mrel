@@ -1,4 +1,14 @@
+# SPDX-FileCopyrightText: Contributors to atlite <https://github.com/pypsa/atlite>
+#
+# SPDX-License-Identifier: MIT
+"""
+Module for curating the already downloaded wave data of MREL (ECHOWAVE).
 
+For further reference see:
+[1] Matías A., George L., The ECHOWAVE Hindcast: A 30-years high resolution database 
+for wave energy applications in North Atlantic European waters, Renewable Energy, 
+Volume 236, 2024, 121391,ISSN 0960-1481, https://doi.org/10.1016/j.renene.2024.121391
+"""
 
 import xarray as xr
 import numpy as np
@@ -12,109 +22,89 @@ crs = 4326
 dx = 0.0625
 dy = 0.04
 
-features = {
-    "wave_height" : ["wave_height"],
-    "wave_period" : ["wave_period"]
-}
+features = {"hs": "wave_height", "tp": "wave_period"}
 
-def _rename_and_clean_coords(ds):
+def _rename_and_clean_coords(ds, cutout):
     """
-    Rename 'longitude' and 'latitude' columns to 'x' and 'y' and fix roundings.
-
-    Optionally (add_lon_lat, default:True) preserves latitude and
-    longitude columns as 'lat' and 'lon'.
+    Rename 'longitude' and 'latitude' columns to 'x' and 'y', fix roundings and grid dimensions.
     """
-    ds = ds.rename({"longitude": "x", "latitude": "y"})
-
+    coords = cutout.coords
+    if 'longitude' in ds and 'latitude' in ds:
+        ds = ds.rename({"longitude": "x", "latitude": "y"})
+    # round coords since cds coords are float32 which would lead to mismatches
     ds = ds.assign_coords(
         x=np.round(ds.x.astype(float), 5), y=np.round(ds.y.astype(float), 5)
     )
-
+    if (cutout.dx != dx) or (cutout.dy != dy):
+        ds = regrid(ds, coords["x"], coords["y"], resampling=Resampling.average)
 
     return ds
 
-
-def get_data_wave_height(ds):
-
+def sanitize_wave_height(ds):
+    """
+    Rename and sanitize retrieved wave height data.
+    """
     ds = ds.rename({"hs": "wave_height"})
     ds["wave_height"] = ds["wave_height"].clip(min=0.0)
-
     return ds
 
-def get_data_wave_period(ds):
-
+def sanitize_wave_period(ds):
+    """
+    Rename and sanitize retrieved wave height data.
+    """
     ds = ds.rename({"tp": "wave_period"})
-    # ds["wave_period"] = (1 / ds["wave_period"])
     ds["wave_period"] = ds["wave_period"].clip(min=0.0)
-
     return ds
 
-def as_slice(bounds, pad=True):
+def _bounds(coords, pad: float=0) -> dict[str, slice]:
     """
-    Convert coordinate bounds to slice and pad by 0.01.
+    Convert coordinate bounds to slice and pad if requested.
     """
-    if not isinstance(bounds, slice):
-        bounds = bounds + (-0.01, 0.01)
-        bounds = slice(*bounds)
-    return bounds
+    x0, x1 = coords["x"].min().item() - pad, coords["x"].max().item() + pad
+    y0, y1 = coords["y"].min().item() - pad, coords["y"].max().item() + pad
+    
+    return {"x": slice(x0, x1), "y": slice(y0, y1)}
 
 def get_data(cutout, feature, tmpdir, **creation_parameters):
+    """
+    Load stored MREL (ECHOWAVE) data and reformat to matching the given cutout.
 
-    coords = cutout.coords
+    This function loads and resamples the stored MREL data for a given
+    `atlite.Cutout`.
 
+    Parameters
+    ----------
+    cutout : atlite.Cutout
+    feature : str
+        Name of the feature data to retrieve. Must be in
+        `atlite.datasets.mrel_wave.features`
+    **creation_parameters :
+        Mandatory arguments are:
+            * 'data_path', str. Directory of the stored MREL data.
+ 
+    Returns
+    -------
+    xarray.Dataset
+        Dataset of dask arrays of the retrieved variables.
+    """
+    
     if "data_path" not in creation_parameters:
         logger.error('Argument "data_path" not defined')
         raise ValueError('Argument "data_path" not defined')
     path = creation_parameters["data_path"]
 
     ds = xr.open_dataset(path)
-
-    if 'longitude' in ds and 'latitude' in ds:
-        ds = ds.rename({"longitude": "x", "latitude": "y"})
-
-    ds = ds.sel(x=as_slice(cutout.extent[:2]), y=as_slice(cutout.extent[2:]))
-    ds = ds.assign_coords(
-        x=ds.x.astype(float).round(4), y=ds.y.astype(float).round(4)
-    )
-
-    if (cutout.dx != dx) or (cutout.dy != dy):
-        ds = regrid(ds, coords["x"], coords["y"], resampling=Resampling.average)
+    ds = _rename_and_clean_coords(ds, cutout)
+    bounds = _bounds(cutout.coords, pad=creation_parameters.get("pad", 0))
+    ds = ds.sel(**bounds)
     
-
-    # coords = cutout.coords
-
-    # if "data_path" not in creation_parameters:
-    #     logger.error('Argument "data_path" not defined')
-    #     return None
-
-    # path = creation_parameters["data_path"]
-
-    # logger.info(f"Opening dataset from {path}")
-    # ds = xr.open_dataset(path, chunks=cutout.chunks)
-    # ds = _rename_and_clean_coords(ds)
-
-    variables = ds.data_vars
-
-
-    for var in variables:
-        if var not in ['hs', 'tp']:
-            ds = ds.drop_vars(var)
-
-
-
-    # ds = ds.sel(x=as_slice(cutout.extent[:2]), y=as_slice(cutout.extent[2:]))
-
-    # if (cutout.dx != dx) or (cutout.dy != dy):
-    #     ds = regrid(ds, coords["x"], coords["y"], resampling=Resampling.average)
-
-    logger.info("Obtaining wave data.")
-
-    ds = get_data_wave_height(ds)
-    ds = get_data_wave_period(ds)
-
-    # ds = ds.assign_coords(x=ds.coords["x"], y=ds.coords["y"])
-
+    ds = ds[list(features.values())].rename(features)
+    for feature in features.values():
+        sanitize_func = globals().get(f"sanitize_{feature}")
+        if sanitize_func is not None:
+                ds = sanitize_func(ds)
     return ds
+
 
 
 

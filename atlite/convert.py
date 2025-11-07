@@ -654,8 +654,38 @@ def wind(
     )
 
 
-# #wave
+# wave
 def convert_wave(ds, wec_type):
+    """
+    Convert wave height (Hs) and wave peak period (Tp) data into normalized power output
+    using the device-specific Wave Energy Converter (WEC) power matrix.
+
+    This function matches each combination of significant wave height and peak period
+    in the dataset to a corresponding power output from the WEC power matrix.
+    The resulting power output is normalized by the maximum possible output (capacity)
+    to obtain the specific generation profile.
+
+    Parameters
+    ----------
+    ds : xarray.Dataset
+        Input dataset (cutout) containing two variables:
+        'wave_height' : significant wave height (m)
+        'wave_period' : peak wave period (s)
+    wec_type : dict
+        Dictionary defining the WEC characteristics, including:
+        'Power_Matrix' : a power matrix dictionary stored in "resources\wecgenerator"
+          
+    Returns
+    -------
+    xarray.DataArray
+        DataArray of specific power generation values (normalized power output).
+
+    Notes
+    -----
+    A progress message is printed every one million cases to track computation.
+
+    
+    """
 
     power_matrix = pd.DataFrame.from_dict(wec_type['Power_Matrix'])
 
@@ -676,10 +706,7 @@ def convert_wave(ds, wec_type):
     for Hs_ind, Tp_ind in zip(Hs_list, Tp_list):
         if count % 1000000 == 0:
             print('Case {} of {}: {} %'.format(count, cases, count/cases *100))
-
         if np.isnan(Hs_ind) or np.isnan(Tp_ind):
-            power_list.append(0)
-        elif Hs_ind > 10 or Tp_ind > 18:
             power_list.append(0)
         else:
             generated_power = power_matrix.loc[Hs_ind, Tp_ind]
@@ -703,19 +730,36 @@ def convert_wave(ds, wec_type):
 
 def wave(cutout, wec_type, **params):
     """
-    Generate wave generation time series
+    Compute wave energy generation time series for a given cutout and Wave Energy Converter (WEC) type.
 
-    evaluates the significant wave height (Hs) and wave peak period (Tp)
-    and assesses the power output with the chosen power matrix for each time step and grid cell
+    Parameters
+    ----------
+    cutout : atlite.Cutout
+        Atlite cutout object containing wave-related data (e.g., `wave_height`, `wave_period`).
+    wec_type : str, pathlib.Path, or dict
+        WEC configuration describing the device's power characteristics.
+
+    Returns
+    -------
+    xarray.DataArray
+        Time series of normalized wave power generation for the entire cutout area, with units of "kWh/kWp".
+        The dimensions and resolution follow the input cutout and aggregation parameters.
+    
+    References
+    ----------
+    [1] Lavidas G., Mezilis L., Alday M., Baki H., Tan J., Jain A., Engelfried T. and Raghavan V., 
+    Marine renewables in Energy Systems: Impacts of climate data, generators, energy policies, 
+    opportunities, and untapped potential for 100% decarbonised systems. Energy, Volume 336, 2025, 
+    138359, ISSN 0360-5442, https://doi.org/10.1016/j.energy.2025.138359. 
     """
     if isinstance(wec_type, (str, Path)):
         wec_type = get_wecgeneratorconfig(wec_type)
 
     return cutout.convert_and_aggregate(
-        convert_func = convert_wave, wec_type = wec_type , **params
+        convert_func = convert_wave, 
+        wec_type = wec_type , 
+        **params
     )
-
-
 
 # irradiation
 def convert_irradiation(
