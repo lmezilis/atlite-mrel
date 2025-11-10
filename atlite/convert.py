@@ -749,7 +749,7 @@ def wave(cutout, wec_type, **params):
     opportunities, and untapped potential for 100% decarbonised systems. Energy, Volume 336, 2025,
     138359, ISSN 0360-5442, https://doi.org/10.1016/j.energy.2025.138359.
     """
-    if isinstance(wec_type, (str, Path)):
+    if isinstance(wec_type, str | Path):
         wec_type = get_wecgeneratorconfig(wec_type)
 
     return cutout.convert_and_aggregate(wec_type=wec_type, **params)
