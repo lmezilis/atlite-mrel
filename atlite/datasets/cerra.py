@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: Contributors to atlite <https://github.com/pypsa/atlite>
+#
+# SPDX-License-Identifier: MIT
+
 """
 In order to create a CERRA cutout, the data must be manually downloaded from the Climate Data Store.
 The variable used is "10m wind speed" and there is not a direction component in it.
