@@ -656,7 +656,7 @@ def wind(
 
 # wave
 def convert_wave(ds, wec_type):
-    """
+    r"""
     Convert wave height (Hs) and wave peak period (Tp) data into normalized power output
     using the device-specific Wave Energy Converter (WEC) power matrix.
 
@@ -674,7 +674,7 @@ def convert_wave(ds, wec_type):
     wec_type : dict
         Dictionary defining the WEC characteristics, including:
         'Power_Matrix' : a power matrix dictionary stored in "resources\wecgenerator"
-          
+
     Returns
     -------
     xarray.DataArray
@@ -684,11 +684,10 @@ def convert_wave(ds, wec_type):
     -----
     A progress message is printed every one million cases to track computation.
 
-    
+
     """
 
-    power_matrix = pd.DataFrame.from_dict(wec_type['Power_Matrix'])
-
+    power_matrix = pd.DataFrame.from_dict(wec_type["Power_Matrix"])
 
     max_pow = power_matrix.to_numpy().max()
 
@@ -745,21 +744,20 @@ def wave(cutout, wec_type, **params):
     xarray.DataArray
         Time series of normalized wave power generation for the entire cutout area, with units of "kWh/kWp".
         The dimensions and resolution follow the input cutout and aggregation parameters.
-    
+
     References
     ----------
-    [1] Lavidas G., Mezilis L., Alday M., Baki H., Tan J., Jain A., Engelfried T. and Raghavan V., 
-    Marine renewables in Energy Systems: Impacts of climate data, generators, energy policies, 
-    opportunities, and untapped potential for 100% decarbonised systems. Energy, Volume 336, 2025, 
-    138359, ISSN 0360-5442, https://doi.org/10.1016/j.energy.2025.138359. 
+    [1] Lavidas G., Mezilis L., Alday M., Baki H., Tan J., Jain A., Engelfried T. and Raghavan V.,
+    Marine renewables in Energy Systems: Impacts of climate data, generators, energy policies,
+    opportunities, and untapped potential for 100% decarbonised systems. Energy, Volume 336, 2025,
+    138359, ISSN 0360-5442, https://doi.org/10.1016/j.energy.2025.138359.
     """
     if isinstance(wec_type, (str, Path)):
         wec_type = get_wecgeneratorconfig(wec_type)
 
-    return cutout.convert_and_aggregate(
-        wec_type = wec_type , 
-        **params
-    )
+    return cutout.convert_and_aggregate(wec_type=wec_type, **params)
+
+
 def convert_irradiation(
     ds,
     orientation,

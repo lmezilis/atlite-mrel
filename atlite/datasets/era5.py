@@ -55,7 +55,7 @@ features = {
     ],
     "temperature": ["temperature", "soil temperature", "dewpoint temperature"],
     "runoff": ["runoff"],
-    "wave" : ["wave_height", "wave_period"]
+    "wave": ["wave_height", "wave_period"],
 }
 
 static_features = {"height"}
