@@ -656,7 +656,7 @@ def wind(
 
 # wave
 def convert_wave(ds, wec_type):
-    r"""
+    """
     Convert wave height (Hs) and wave peak period (Tp) data into normalized power output
     using the device-specific Wave Energy Converter (WEC) power matrix.
 
@@ -669,11 +669,11 @@ def convert_wave(ds, wec_type):
     ----------
     ds : xarray.Dataset
         Input dataset (cutout) containing two variables:
-        'wave_height' : significant wave height (m)
-        'wave_period' : peak wave period (s)
+        wave_height: significant wave height (m)
+        wave_period: peak wave period (s)
     wec_type : dict
         Dictionary defining the WEC characteristics, including:
-        'Power_Matrix' : a power matrix dictionary stored in "resources\wecgenerator"
+        Power_Matrix: a power matrix dictionary stored in "resources\wecgenerator"
 
     Returns
     -------
