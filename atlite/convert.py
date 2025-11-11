@@ -683,16 +683,13 @@ def convert_wave(ds, wec_type):
     Notes
     -----
     A progress message is printed every one million cases to track computation.
-
-    
     """
 
-    power_matrix = pd.DataFrame.from_dict(wec_type['Power_Matrix'])
-
+    power_matrix = pd.DataFrame.from_dict(wec_type["Power_Matrix"])
     max_pow = power_matrix.to_numpy().max()
-    
-    Hs = np.ceil(ds['wave_height']*2)/2
-    Tp = np.ceil(ds['wave_period']*2)/2
+
+    Hs = np.ceil(ds["wave_height"] * 2) / 2
+    Tp = np.ceil(ds["wave_period"] * 2) / 2
 
     Hs_list = Hs.to_numpy().flatten().tolist()
     Tp_list = Tp.to_numpy().flatten().tolist()
@@ -710,7 +707,7 @@ def convert_wave(ds, wec_type):
             power_list.append(0)
         else:
             generated_power = power_matrix.loc[Hs_ind, Tp_ind]
-            power_list.append(generated_power/max_pow)
+            power_list.append(generated_power / max_pow)
         count += 1
 
     # results list to numpy array
@@ -718,15 +715,15 @@ def convert_wave(ds, wec_type):
 
     power_list_np = power_list_np.reshape(Hs.shape)
 
-    da = xr.DataArray(power_list_np,
-                      coords = Hs.coords,
-                      dims = Hs.dims,
-                      name = 'Power generated')
+    da = xr.DataArray(
+        power_list_np, coords=Hs.coords, dims=Hs.dims, name="Power generated"
+    )
     da.attrs["units"] = "kWh/kWp"
     da = da.rename("specific generation")
     da = da.fillna(0)
 
     return da
+
 
 def wave(cutout, wec_type, **params):
     """
@@ -744,24 +741,23 @@ def wave(cutout, wec_type, **params):
     xarray.DataArray
         Time series of normalized wave power generation for the entire cutout area, with units of "kWh/kWp".
         The dimensions and resolution follow the input cutout and aggregation parameters.
-    
+
     References
     ----------
-    [1] Lavidas G., Mezilis L., Alday M., Baki H., Tan J., Jain A., Engelfried T. and Raghavan V., 
-    Marine renewables in Energy Systems: Impacts of climate data, generators, energy policies, 
-    opportunities, and untapped potential for 100% decarbonised systems. Energy, Volume 336, 2025, 
-    138359, ISSN 0360-5442, https://doi.org/10.1016/j.energy.2025.138359. 
+    [1] Lavidas G., Mezilis L., Alday M., Baki H., Tan J., Jain A., Engelfried T. and Raghavan V.,
+    Marine renewables in Energy Systems: Impacts of climate data, generators, energy policies,
+    opportunities, and untapped potential for 100% decarbonised systems. Energy, Volume 336, 2025,
+    138359, ISSN 0360-5442, https://doi.org/10.1016/j.energy.2025.138359.
     """
-    if isinstance(wec_type, (str, Path)):
+    if isinstance(wec_type, str | Path):
         wec_type = get_wecgeneratorconfig(wec_type)
 
     return cutout.convert_and_aggregate(
-        convert_func = convert_wave, 
-        wec_type = wec_type , 
-        **params
-    )
+        convert_func=convert_wave,
+        wec_type=wec_type, 
+        **params)
 
-# irradiation
+
 def convert_irradiation(
     ds,
     orientation,
